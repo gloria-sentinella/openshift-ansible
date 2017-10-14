@@ -1,0 +1,59 @@
+[OSEv3:children]
+masters
+nodes
+etcd
+lb
+
+[OSEv3:vars]
+ansible_ssh_user=cloud-user
+ansible_become=true
+deployment_type=openshift-enterprise
+containerized=true
+
+# Uncomment the following to enable htpasswd authentication; defaults to
+# DenyAllPasswordIdentityProvider.
+#openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
+
+# Native high availability cluster method with optional load balancer.
+# If no lb group is defined installer assumes that a load balancer has
+# been preconfigured. For installation the value of
+# openshift_master_cluster_hostname must resolve to the load balancer
+# or to one or all of the masters defined in the inventory if no load
+# balancer is present.
+openshift_master_cluster_method=native
+openshift_master_cluster_hostname=openshift-cluster.sentinel.la
+openshift_master_cluster_public_hostname=openshift-cluster.sentinel.la
+openshift_node_kubelet_args={'pods-per-core': ['10'], 'max-pods': ['250'], 'image-gc-high-threshold': ['90'], 'image-gc-low-threshold': ['80']}
+# override the default controller lease ttl
+#osm_controller_lease_ttl=30
+
+# enable ntp on masters to ensure proper failover
+openshift_clock_enabled=true
+
+# host group for masters
+[masters]
+master01
+master02
+master03
+
+# host group for etcd
+[etcd]
+master01
+master02
+master03
+
+# Specify load balancer host
+[lb]
+infra01
+
+# host group for nodes, includes region info
+[nodes]
+master01
+master02
+master03
+app01 openshift_node_labels="{'region': 'primary', 'zone': 'default'}"
+app02 openshift_node_labels="{'region': 'primary', 'zone': 'default'}"
+app03 openshift_node_labels="{'region': 'primary', 'zone': 'default'}"
+infra01 openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+infra02 openshift_node_labels="{'region': 'infra', 'zone': 'default'}"
+
